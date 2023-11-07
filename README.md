@@ -1,6 +1,6 @@
 ## Script to execute crosschain CCTP tx via Squid
 
-- add you PK in .env "PK=yourPK"
+- add your PK in .env "PK=yourPK"
 - yarn install
 - yarn dev
 
