@@ -7,7 +7,7 @@ async function sendCalldataTransaction() {
   if (!process.env.PK) throw new Error("process.env.PK is undefined");
   const PK = process.env.PK;
 
-  let squidCalldata;
+  let routeResponse;
   try {
     const url = "https://testnet.v2.api.squidrouter.com/v2/route";
     const data = {
@@ -34,7 +34,7 @@ async function sendCalldataTransaction() {
 
     const response = await axios.post(url, data, headers);
     console.log("Response data:", response.data);
-    squidCalldata = response.data.route.transactionRequest.data;
+    routeResponse = response.data.route;
   } catch (error) {
     console.error("Error:", error);
   }
@@ -43,13 +43,10 @@ async function sendCalldataTransaction() {
   const provider = ethers.getDefaultProvider(rpcUrl);
   const wallet = new ethers.Wallet(PK, provider);
 
-  // CCTP contract
-  const contractAddress = "0xD0C3da58f55358142b8d3e06C1C30c5C6114EFE8";
-
   // Create a transaction object
   const transaction = {
-    to: contractAddress,
-    data: squidCalldata,
+    to: routeResponse.transactionRequest.target,
+    data: routeResponse.transactionRequest.data,
   };
 
   // Estimate gas cost
