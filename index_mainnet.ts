@@ -9,8 +9,7 @@ async function sendCalldataTransaction() {
 
   let routeResponse;
   try {
-    const url =
-      "https://squid-api-v2-git-hotfix-gas-limit-cctp-0xsquid.vercel.app/v2/route";
+    const url = "https://v2.api.squidrouter.com/v2/route";
     const data = {
       fromChain: "1",
       fromToken: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -29,7 +28,7 @@ async function sendCalldataTransaction() {
 
     const headers: AxiosRequestConfig = {
       headers: {
-        "x-integrator-id": "Squid-team", // Set your authorization token here.
+        "x-integrator-id": "Your-integrator-id", // Set your authorization token here.
       },
     };
 
@@ -54,19 +53,58 @@ async function sendCalldataTransaction() {
   // Estimate gas cost
   const gasEstimate = await wallet.estimateGas(transaction);
 
-  transaction["gasLimit"] = routeResponse.transactionRequest.gasLimit;
-  //transaction["gasLimit"] = ethers.BigNumber.from("150000");
+  //transaction["gasLimit"] = routeResponse.transactionRequest.gasLimit;
+  transaction["gasLimit"] = gasEstimate;
 
   // Sign and send the transaction
   const tx = await wallet.sendTransaction(transaction);
   console.log("Transaction sent:", tx.hash);
 
   // Wait for the transaction to be confirmed
+  console.log("Waiting to tx to be confirmed");
   await tx.wait();
-  //console.log("Transaction confirmed in block:", tx);
 
   console.log("##############################################");
-  console.log(tx.hash);
+  console.log("Transaction confirmed in block:", tx.hash);
+
+  console.log("checkig tx status....");
+  async function waitForSuccess() {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    let isSuccess = false;
+    while (!isSuccess) {
+      try {
+        const response = await axios.get(
+          "https://v2.api.squidrouter.com/v1/status",
+          {
+            params: {
+              transactionId: tx.hash,
+              fromChainId: 1,
+              bridgeType: "cctp",
+              toChainId: "noble-1",
+            },
+          }
+        );
+
+        if (
+          response.data &&
+          response.data.squidTransactionStatus === "success"
+        ) {
+          console.log(response.data);
+          console.log("Transaction successful!");
+          isSuccess = true;
+        } else {
+          console.log(response.data);
+          console.log("In progress....");
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds before the next check
+        }
+      } catch (error) {
+        console.log("Error:", error);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+  }
+
+  await waitForSuccess();
 }
 
 sendCalldataTransaction()
