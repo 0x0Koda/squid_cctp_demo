@@ -4,8 +4,8 @@ import axios, { AxiosRequestConfig } from "axios";
 dotenv.config();
 
 async function sendCalldataTransaction() {
-  if (!process.env.PK) throw new Error("process.env.PK is undefined");
-  const PK = process.env.PK;
+  if (!process.env.PK || !process.env.RPC)
+    throw new Error("Update the .env file with your PK and RPC");
 
   let routeResponse;
   try {
@@ -41,9 +41,9 @@ async function sendCalldataTransaction() {
     console.error("Error:", error);
   }
 
-  const rpcUrl = "";
+  const rpcUrl = process.env.RPC;
   const provider = ethers.getDefaultProvider(rpcUrl);
-  const wallet = new ethers.Wallet(PK, provider);
+  const wallet = new ethers.Wallet(process.env.PK, provider);
 
   // Create a transaction object
   const transaction = {
