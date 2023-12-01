@@ -9,7 +9,8 @@ async function sendCalldataTransaction() {
 
   let routeResponse;
   try {
-    const url = "https://v2.api.squidrouter.com/v2/route";
+    const url =
+      "https://squid-api-v2-git-hotfix-gas-limit-cctp-0xsquid.vercel.app/v2/route";
     const data = {
       fromChain: "1",
       fromToken: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -40,8 +41,7 @@ async function sendCalldataTransaction() {
     console.error("Error:", error);
   }
 
-  const rpcUrl =
-    "https://mainnet.infura.io/v3/273aad656cd94f9aa022e4899b87dd6c";
+  const rpcUrl = "";
   const provider = ethers.getDefaultProvider(rpcUrl);
   const wallet = new ethers.Wallet(PK, provider);
 
@@ -54,7 +54,8 @@ async function sendCalldataTransaction() {
   // Estimate gas cost
   const gasEstimate = await wallet.estimateGas(transaction);
 
-  transaction["gasLimit"] = ethers.BigNumber.from("150000");
+  transaction["gasLimit"] = routeResponse.transactionRequest.gasLimit;
+  //transaction["gasLimit"] = ethers.BigNumber.from("150000");
 
   // Sign and send the transaction
   const tx = await wallet.sendTransaction(transaction);
@@ -62,7 +63,10 @@ async function sendCalldataTransaction() {
 
   // Wait for the transaction to be confirmed
   await tx.wait();
-  console.log("Transaction confirmed in block:", tx);
+  //console.log("Transaction confirmed in block:", tx);
+
+  console.log("##############################################");
+  console.log(tx.hash);
 }
 
 sendCalldataTransaction()
